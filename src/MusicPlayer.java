@@ -67,9 +67,23 @@ public class MusicPlayer extends Application {
                             player.setRate(player.getRate() - 0.1);
                             break;
                 case P:         //Pause
-                            player.pause();
                             player2 = new MediaPlayer(song2);
-                            player2.setVolume(1.0);
+                            player2.setVolume(2.0);
+
+                            player2.setOnPlaying(() ->{
+                                new AnimationTimer() {
+                                    @Override
+                                    public void handle(long now) {
+                                    if(player.getVolume() > 0.01) {
+                                        player.setVolume(player.getVolume() - 0.05);
+                                    } else {
+                                        player.pause();
+                                        stop();
+                                    }
+                                    }
+                                }.start();
+                            });
+
                             player2.setOnEndOfMedia(() -> {
                                 finished = true;
                             });
@@ -81,6 +95,20 @@ public class MusicPlayer extends Application {
 
                                player2 = new MediaPlayer(song3);
                                player2.setVolume(1.0);
+
+                               player.setOnPlaying( () -> {
+                                   new AnimationTimer() {
+                                       @Override
+                                       public void handle(long now) {
+                                           if(player.getVolume() < 1.00) {
+                                               player.setVolume(player.getVolume() + 0.01);
+                                           } else {
+                                               stop();
+                                           }
+                                       }
+                                   }.start();
+                               });
+
                                finished = false;
                                player2.setOnEndOfMedia(() -> {
                                    player.play();
