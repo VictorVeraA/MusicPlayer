@@ -1,131 +1,188 @@
 import javafx.animation.AnimationTimer;
-import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.io.File;
 
-public class MusicPlayer extends Application {
+public class MusicPlayer {
 
     private MediaPlayer player;
-    private MediaPlayer player2;
-    private Media song1;
-    private Media song2;
-    private Media song3;
-    private boolean finished;
+    private Media song;
+    private String pathToFile;
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    public MusicPlayer() {
 
-        song1 = new Media(new File("resources/p5.mp3").toURI().toString());
-        song2 = new Media(new File("resources/z.mp3").toURI().toString());
-        song3 = new Media(new File("resources/t.mp3").toURI().toString());
-        player = new MediaPlayer(song1);
-        player.play();
+    }
 
-        Group grupo = new Group();
+    public MusicPlayer(String file) {
+        pathToFile = "resources/";
+        song = new Media(new File( pathToFile + file).toURI().toString());
+        player = new MediaPlayer(song);
+    }
 
-        grupo.getChildren().add(new Canvas(100, 100));
+    public MusicPlayer(String pathToFile, String file) {
 
-        Scene escena = new Scene(grupo);
+        this.pathToFile = pathToFile;
+        song = new Media(new File(pathToFile + file).toURI().toString());
+        player = new MediaPlayer(song);
+    }
 
-        escena.setOnKeyPressed(event -> {
-            switch(event.getCode()) {
-                case UP:    if(player.getVolume() != 1)
-                                player.setVolume(player.getVolume() + 0.1);
-                            break;
+    public int play() {
+        if(player != null && !isSongPLaying()) {
+            player.play();
+            return 0;
+        }
 
-                case DOWN:  if(player.getVolume() != 0)
-                                player.setVolume(player.getVolume() - 0.1);
-                            break;
-                case LEFT:      //Fade out
-                    new AnimationTimer() {
-                        @Override
-                        public void handle(long now) {
-                            if(player.getVolume() > 0.01) {
-                                player.setVolume(player.getVolume() - 0.01);
-                            } else {
-                                stop();
-                            }
+        return -1;
+    }
+
+    public int pause() {
+        if(player != null && !isSongPLaying()) {
+            player.pause();
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int stop() {
+        if(player != null && isSongPLaying()) {
+            player.stop();
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int fadeOut() {
+        if(isSongPLaying()) {
+
+            new Thread(() -> new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+
+                    if(player.getVolume() > 0.01) {
+                        player.setVolume(player.getVolume() - 0.01);
+                    } else {
+                        player.stop();
+                        stop();
+                    }
+                }
+            }).run();
+
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public boolean isSongPLaying() {
+        if(player != null)
+            return player.getStatus() == MediaPlayer.Status.PLAYING;
+
+        return false;
+    }
+
+    public int setSong(String file) {
+        if(isSongPLaying()) {
+            player.stop();
+        }
+
+        song = new Media(new File(pathToFile + file).toURI().toString());
+
+        if(song != null) {
+            player = new MediaPlayer(song);
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int setSongAndPlay(String file) {
+        if(setSong(file) != -1) {
+            player.play();
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int setVolume(double volume) {
+        if(volume >= 0.0 && volume <= 1.0) {
+            player.setVolume(volume);
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int fadeToVolume(double volume) {
+        if(volume >= 0.0 && volume <= 1.0 && volume != player.getVolume()) {
+
+            if(volume < player.getVolume()) {
+
+                new Thread(() -> new AnimationTimer() {
+                    @Override
+                    public void handle(long now) {
+
+                        if(player.getVolume() > volume) {
+                            player.setVolume(player.getVolume() - volume/240);  //Fade en 4 segundos
+                        } else {
+                            stop();
                         }
-                    }.start();
-                    break;
-                case RIGHT:     //Play again
-                            player.stop();
-                            player.setVolume(1.0);
-                            player.play();
-                            break;
-                case D:         //Mas rapido
-                            player.setRate(player.getRate() + 0.1);
-                            break;
-                case A:         //Mas lento
-                            player.setRate(player.getRate() - 0.1);
-                            break;
-                case P:         //Pause
-                            player2 = new MediaPlayer(song2);
-                            player2.setVolume(2.0);
+                    }
+                }).run();
 
-                            player2.setOnPlaying(() ->{
-                                new AnimationTimer() {
-                                    @Override
-                                    public void handle(long now) {
-                                    if(player.getVolume() > 0.01) {
-                                        player.setVolume(player.getVolume() - 0.05);
-                                    } else {
-                                        player.pause();
-                                        stop();
-                                    }
-                                    }
-                                }.start();
-                            });
+            } else if(volume > player.getVolume()) {
 
-                            player2.setOnEndOfMedia(() -> {
-                                finished = true;
-                            });
-                            player2.play();
-                            break;
+                new Thread(() -> new AnimationTimer() {
+                    @Override
+                    public void handle(long now) {
 
-                case R:         //Resume
-                            if(player2.getMedia().equals(song2) && finished) {
-
-                               player2 = new MediaPlayer(song3);
-                               player2.setVolume(1.0);
-
-                               player.setOnPlaying( () -> {
-                                   new AnimationTimer() {
-                                       @Override
-                                       public void handle(long now) {
-                                           if(player.getVolume() < 1.00) {
-                                               player.setVolume(player.getVolume() + 0.01);
-                                           } else {
-                                               stop();
-                                           }
-                                       }
-                                   }.start();
-                               });
-
-                               finished = false;
-                               player2.setOnEndOfMedia(() -> {
-                                   player.play();
-                               });
-                               player2.play();
-                            }
-                            break;
+                        if(player.getVolume() < volume) {
+                            player.setVolume(player.getVolume() + volume/240);  //Fade en 4 segundos
+                        } else {
+                            stop();
+                        }
+                    }
+                }).run();
 
             }
-        });
 
-        primaryStage.setScene(escena);
+            return 0;
+        }
 
-        primaryStage.show();
+        return -1;
     }
 
-    public static void main(String[] args) {
-        launch(args);
+
+
+    public String getPathToFile() {
+        return pathToFile;
     }
+
+    public void setPathToFile(String pathToFile) {
+        this.pathToFile = pathToFile;
+    }
+
+    public int createPlayer() {
+        if(player == null && song != null) {
+            player = new MediaPlayer(song);
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int createPlayer(String file) {
+        if(player == null) {
+
+            player = new MediaPlayer(song);
+            return 0;
+        }
+
+        return -1;
+    }
+
+
 }
