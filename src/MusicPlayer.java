@@ -6,18 +6,26 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 
 public class MusicPlayer extends Application {
 
     private MediaPlayer player;
+    private MediaPlayer player2;
+    private Media song1;
+    private Media song2;
+    private Media song3;
+    private boolean finished;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Media song = new Media(new File("resources/p5.mp3").toURI().toString());
-        player = new MediaPlayer(song);
+        song1 = new Media(new File("resources/p5.mp3").toURI().toString());
+        song2 = new Media(new File("resources/z.mp3").toURI().toString());
+        song3 = new Media(new File("resources/t.mp3").toURI().toString());
+        player = new MediaPlayer(song1);
         player.play();
 
         Group grupo = new Group();
@@ -47,6 +55,40 @@ public class MusicPlayer extends Application {
                         }
                     }.start();
                     break;
+                case RIGHT:     //Play again
+                            player.stop();
+                            player.setVolume(1.0);
+                            player.play();
+                            break;
+                case D:         //Mas rapido
+                            player.setRate(player.getRate() + 0.1);
+                            break;
+                case A:         //Mas lento
+                            player.setRate(player.getRate() - 0.1);
+                            break;
+                case P:         //Pause
+                            player.pause();
+                            player2 = new MediaPlayer(song2);
+                            player2.setVolume(1.0);
+                            player2.setOnEndOfMedia(() -> {
+                                finished = true;
+                            });
+                            player2.play();
+                            break;
+
+                case R:         //Resume
+                            if(player2.getMedia().equals(song2) && finished) {
+
+                               player2 = new MediaPlayer(song3);
+                               player2.setVolume(1.0);
+                               finished = false;
+                               player2.setOnEndOfMedia(() -> {
+                                   player.play();
+                               });
+                               player2.play();
+                            }
+                            break;
+
             }
         });
 
