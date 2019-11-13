@@ -68,7 +68,7 @@ public class MusicPlayer {
                         stop();
                     }
                 }
-            }).run();
+            }.start()).start();
 
             return 0;
         }
@@ -131,7 +131,7 @@ public class MusicPlayer {
                             stop();
                         }
                     }
-                }).run();
+                }.start()).start();
 
             } else if(volume > player.getVolume()) {
 
@@ -145,7 +145,7 @@ public class MusicPlayer {
                             stop();
                         }
                     }
-                }).run();
+                }.start()).start();
 
             }
 

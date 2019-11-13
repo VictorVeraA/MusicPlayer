@@ -22,7 +22,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        song1 = new Media(new File("resources/pp.mp3").toURI().toString());
+        song1 = new Media(new File("resources/p5.mp3").toURI().toString());
         song2 = new Media(new File("resources/z.mp3").toURI().toString());
         song3 = new Media(new File("resources/t.mp3").toURI().toString());
         player = new MediaPlayer(song1);
